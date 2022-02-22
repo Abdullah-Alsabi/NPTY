@@ -8,8 +8,8 @@ router.get("/getads", (req, res) => {
   adsSchema
     .find()
     .then((data) => {
-      res.json(data);
       console.log(data);
+      res.json(data);
     })
     .catch((err) => {
       console.log(err);

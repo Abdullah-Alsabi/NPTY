@@ -10,7 +10,9 @@ let city = "Riyadh";
 let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}&units=metric`;
 const getWeather = async () => {
   try {
-    return await axios.get(url);
+    let data = await axios.get(url);
+    console.log(data.data);
+    return await data.data;
   } catch (error) {
     console.error(error);
   }
@@ -19,7 +21,6 @@ const getWeather = async () => {
 router.post("/signup", async (req, res) => {
   let { userName, email, password, firstName, lastName, phoneNumber } =
     req.body;
-  console.log(firstName);
   const userExists = await Users.findOne({ email });
   const checkUserName = await Users.findOne({ userName });
 
@@ -38,16 +39,9 @@ router.post("/signup", async (req, res) => {
       phoneNumber,
     });
     console.log(user);
-    let token = generateToken(user);
-    res.cookie("jwt", token, { httpOnly: false });
     if (user) {
+      let token = await generateToken(user);
       res.json({
-        _id: user._id,
-        userName: user.userName,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phoneNumber: user.phoneNumber,
         token: token,
       });
     }
@@ -61,18 +55,10 @@ router.post("/signin", async (req, res) => {
   if (!user || !(await user.matchPassword(password))) {
     res.status(404).send("wrong username or password");
   } else if (user && (await user.matchPassword(password))) {
-    let token = generateToken(user);
-    res.cookie("jwt", token, { httpOnly: false });
     let weatherData = await getWeather();
+    let token = await generateToken(user);
+
     res.json({
-      _id: user._id,
-      userName: user.userName,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phoneNumber: user.phoneNumber,
-      temp: weatherData.data.main.temp,
-      city: weatherData.data.name,
       token: token,
     });
   }
